@@ -66,6 +66,7 @@ class Measurements extends StatelessWidget {
   final Alignment deleteChildAlignment;
   final bool measure;
   final bool isPerimeter;
+  final bool isPinpoint;
   final bool showDistanceOnLine;
   final MeasurementInformation measurementInformation;
   final double magnificationZoomFactor;
@@ -81,6 +82,7 @@ class Measurements extends StatelessWidget {
     this.deleteChildAlignment = Alignment.bottomCenter,
     this.measure = true,
     this.isPerimeter = false,
+    this.isPinpoint = false,
     this.showDistanceOnLine = true,
     this.measurementInformation = const MeasurementInformation.dinA4(),
     this.magnificationZoomFactor = 2.0,
@@ -112,6 +114,7 @@ class Measurements extends StatelessWidget {
         deleteChildAlignment,
         measure,
         isPerimeter,
+        isPinpoint,
         showDistanceOnLine,
         measurementInformation,
         magnificationZoomFactor,
@@ -135,6 +138,7 @@ class _Measurements extends StatelessWidget {
   final Alignment deleteChildAlignment;
   final bool measure;
   final bool isPerimeter;
+  final bool isPinpoint;
   final bool showDistanceOnLine;
   final MeasurementInformation measurementInformation;
   final double magnificationZoomFactor;
@@ -149,6 +153,7 @@ class _Measurements extends StatelessWidget {
     this.deleteChildAlignment,
     this.measure,
     this.isPerimeter,
+    this.isPinpoint,
     this.showDistanceOnLine,
     this.measurementInformation,
     this.magnificationZoomFactor,
@@ -264,7 +269,7 @@ class _Measurements extends StatelessWidget {
                 pointStyle: pointStyle,
                 magnificationStyle: magnificationStyle,
                 distanceStyle: distanceStyle,
-                
+                isPinpoint: isPinpoint,
               ),
               Align(
                 alignment: deleteChildAlignment,

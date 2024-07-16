@@ -144,7 +144,13 @@ class _MyAppState extends State<MyApp> {
           ),
         ),
         body: Measurements(
-            child: Center(child: Image.asset('assets/images/tech_draw.png'),),
+            child: Center(
+              child: Column(
+            children: [
+              Text('test text child'),
+              Image.asset('assets/images/tech_draw.png'),
+            ],
+          )),
             deleteChild: Container(
             // child: Icon(
             //   Icons.delete,
@@ -166,6 +172,7 @@ class _MyAppState extends State<MyApp> {
             ),
             measure: true,
             isPerimeter: measure,
+            isPinpoint: true,
           ),
         bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[

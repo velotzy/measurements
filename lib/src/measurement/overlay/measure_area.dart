@@ -6,6 +6,7 @@ import 'package:document_measure/src/measurement/bloc/magnification_bloc/magnifi
 import 'package:document_measure/src/measurement/bloc/magnification_bloc/magnification_state.dart';
 import 'package:document_measure/src/measurement/bloc/points_bloc/points_bloc.dart';
 import 'package:document_measure/src/measurement/bloc/points_bloc/points_state.dart';
+import 'package:document_measure/src/measurement/overlay/painters/pinpoint_painter.dart';
 import 'package:document_measure/src/measurement/overlay/painters/polygon_painter.dart';
 import 'package:document_measure/src/measurement/overlay/painters/size_painter.dart';
 import 'package:document_measure/src/measurement/repository/measurement_repository.dart';
@@ -22,6 +23,7 @@ class MeasureArea extends StatelessWidget {
   final PointStyle pointStyle;
   final MagnificationStyle magnificationStyle;
   final DistanceStyle distanceStyle;
+  final bool isPinpoint;
   final Paint dotPaint = Paint(), pathPaint = Paint();
   final measurementRepository = GetIt.I<MeasurementRepository>();
 
@@ -29,6 +31,7 @@ class MeasureArea extends StatelessWidget {
       {required this.pointStyle,
       required this.magnificationStyle,
       required this.distanceStyle,
+      required this.isPinpoint
       }) {
     var lineType = pointStyle.lineType;
     double strokeWidth;
@@ -67,20 +70,27 @@ class MeasureArea extends StatelessWidget {
   Stack _pointsOverlay(PointsState state) {
     
     var widgets = <Widget>[];
-
-    if (state is PointsSingleState) {
-      widgets.add(_pointPainter(state.point, state.point, false));
-    } else if (state is PointsOnlyState) {
-      widgets.addAll(_onlyPoints(state));
-    // } else if (state is PointsAndDistanceActiveState ) {
-    //   widgets.addAll(_pointsAndPolygonWithSpace(state));
-    // } else if (state is PointsAndDistanceState) {
-    //   widgets.addAll(_pointsAndPolygon(state));
-    }  else if (state is PointsAndDistanceActiveState) {
-      widgets.addAll(_pointsAndDistancesWithSpace(state));
-    } else if (state is PointsAndDistanceState) {
-      widgets.addAll(_pointsAndDistances(state));
-    }
+    
+      if (state is PointsSingleState) {
+        if (isPinpoint) {
+          widgets.add(_pinPointPainter(state.point, state.point));
+        } else {
+          widgets.add(_pointPainter(state.point, state.point, false));
+        }
+        
+      } else if (state is PointsOnlyState) {
+        widgets.addAll(_onlyPoints(state, isPinpoint: isPinpoint));
+        // } else if (state is PointsAndDistanceActiveState ) {
+        //   widgets.addAll(_pointsAndPolygonWithSpace(state));
+        // } else if (state is PointsAndDistanceState) {
+        //   widgets.addAll(_pointsAndPolygon(state));
+      } else if (state is PointsAndDistanceActiveState) {
+        widgets.addAll(_pointsAndDistancesWithSpace(state, isPinpoint: isPinpoint));
+      } else if (state is PointsAndDistanceState) {
+        widgets.addAll(_pointsAndDistances(state, isPinpoint: isPinpoint));
+      }
+    
+    
 
     return Stack(
       children: widgets.asMap().entries.map((entry) {
@@ -96,23 +106,25 @@ return entry.value;
     );
   }
 
-  List<Widget> _onlyPoints(PointsOnlyState state) {
+  List<Widget> _onlyPoints(PointsOnlyState state, {isPinpoint = false}) {
     var widgets = <Widget>[];
 
     state.points
-        .doInBetween((start, end) => widgets.add(_pointPainter(start, end, false)));
+        .doInBetween((start, end) => widgets.add(isPinpoint ? _pinPointPainter(start, end) : _pointPainter(start, end, false)));
 
     return widgets;
   }
 
   Iterable<Widget> _pointsAndDistancesWithSpace(
-      PointsAndDistanceActiveState state) {
+      PointsAndDistanceActiveState state, {isPinpoint = false}) {
     var widgets = <Widget>[];
     final listType = measurementRepository.getListType();
 
     state.holders.asMap().forEach((index, holder) {
-      
-      if (listType[index] == true) {
+      if (isPinpoint) {
+        widgets.add(_pinPointPainter(holder.start, holder.end));
+      } else {
+        if (listType[index] == true) {
         if (index % 2 == 0) {
           widgets.add(_sizePainter(
               holder.start, holder.end, holder.distance, state.tolerance, state.viewCenter));
@@ -126,18 +138,23 @@ return entry.value;
         }
       }
       
+      }
+      
+      
     });
 
     return widgets;
   }
 
-  List<Widget> _pointsAndDistances(PointsAndDistanceState state) {
+  List<Widget> _pointsAndDistances(PointsAndDistanceState state, {isPinpoint = false}) {
     var widgets = <Widget>[];
     final listType = measurementRepository.getListType();
 
     state.holders.asMap().forEach((index, holder) {
-      
-      if (listType[index] == true) {
+      if (isPinpoint) {
+        widgets.add(_pinPointPainter(holder.start, holder.end));
+      } else {
+        if (listType[index] == true) {
         widgets.add(_polygonPainter(holder.start, holder.end, index % 2 == 0));
         if (index % 2 == 0) {
           widgets.add(_sizePainter(
@@ -150,10 +167,26 @@ return entry.value;
               holder.distance, state.tolerance, state.viewCenter));
         }
       }
+      }
+      
     });
 
     return widgets;
   }
+
+  CustomPaint _pinPointPainter(dynamic first, dynamic last ) {
+    return CustomPaint(
+      size: Size(20,20),
+      foregroundPainter: PinPointPainter(
+        start: first,
+        end: last,
+        
+        dotPaint: dotPaint,
+        
+      ),
+    );
+  }
+
 
   CustomPaint _pointPainter(dynamic first, dynamic last, bool isDrawPath ) {
     return CustomPaint(
